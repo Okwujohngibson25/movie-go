@@ -3,3 +3,6 @@
 /api
 .DS_Store
 __MACOSX/
+.claude
+/docs
+/md-files

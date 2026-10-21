@@ -123,6 +123,11 @@ func (s *UserService) LoginUser(ctx context.Context, req LoginUserInput) (signed
 }
 
 func (s *UserService) SeedAdmin(cfg *config.Config) {
+	if cfg.App.AdminEmail == "" || cfg.App.AdminPassword == "" {
+		log.Println("WARNING: admin email or password not configured, skipping admin seeding")
+		return
+	}
+
 	_, err := s.repository.FindByEmail(context.Background(), cfg.App.AdminEmail)
 	if err != nil {
 		// if Admin account does not exist... Seed Admin account
@@ -145,6 +150,7 @@ func (s *UserService) SeedAdmin(cfg *config.Config) {
 
 			if err := s.repository.CreateUser(context.Background(), adminData); err != nil {
 				log.Printf("failed to create admin account: %v", err)
+				return
 			}
 			log.Println("Admin account created successfully")
 			return

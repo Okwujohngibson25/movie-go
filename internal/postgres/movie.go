@@ -38,13 +38,20 @@ func (r *MovieSqlcRepository) FindMovieByID(ctx context.Context, id uuid.UUID) (
 		return domains.Movie{}, err
 	}
 
-	rating, err := helper.NumericToDecimal(movieData.Rating)
+	return movieFromRow(movieData)
+}
+
+func movieFromRow(row db.FindMovieByIDRow) (domains.Movie, error) {
+	rating, err := helper.NumericToDecimal(row.Rating)
+	if err != nil {
+		return domains.Movie{}, err
+	}
 
 	return domains.Movie{
-		ID:              movieData.ID.Bytes,
-		Title:           movieData.Title,
-		Description:     movieData.Description,
-		DurationMinutes: int(movieData.DurationMinutes),
+		ID:              row.ID.Bytes,
+		Title:           row.Title,
+		Description:     row.Description,
+		DurationMinutes: int(row.DurationMinutes),
 		Rating:          rating,
 	}, nil
 }
