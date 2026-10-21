@@ -37,6 +37,7 @@ type CustomClaims struct {
 	Email  string
 	UserID uuid.UUID
 	Role   string
+	Type   string `json:"typ"` // "access" or "refresh"; middleware only accepts "access"
 	jwt.RegisteredClaims
 }
 
@@ -84,6 +85,7 @@ func (s *UserService) LoginUser(ctx context.Context, req LoginUserInput) (signed
 		Email:  user.Email,
 		UserID: user.ID,
 		Role:   user.Role,
+		Type:   "access",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(15 * time.Minute)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -102,6 +104,7 @@ func (s *UserService) LoginUser(ctx context.Context, req LoginUserInput) (signed
 		Email:  user.Email,
 		UserID: user.ID,
 		Role:   user.Role,
+		Type:   "refresh",
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)), // 7 days
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -126,7 +129,7 @@ func (s *UserService) SeedAdmin(cfg *config.Config) {
 		if errors.Is(err, apperrors.ErrEmailDoesNotExist) {
 			password, err := bcrypt.GenerateFromPassword([]byte(cfg.App.AdminPassword), 10)
 			if err != nil {
-				log.Println("failed to hash password: %v", err)
+				log.Printf("failed to hash password: %v", err)
 				return
 			}
 			PasswordString := string(password)
@@ -141,7 +144,7 @@ func (s *UserService) SeedAdmin(cfg *config.Config) {
 			}
 
 			if err := s.repository.CreateUser(context.Background(), adminData); err != nil {
-				log.Println("failed to create admin account: %v", err)
+				log.Printf("failed to create admin account: %v", err)
 			}
 			log.Println("Admin account created successfully")
 			return

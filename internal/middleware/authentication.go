@@ -14,6 +14,7 @@ type CustomClaims struct {
 	Email   string    `json:"email"`
 	User_ID uuid.UUID `json:"userid"`
 	Role    string
+	Type    string `json:"typ"`
 	jwt.RegisteredClaims
 }
 
@@ -45,6 +46,12 @@ func RequireAuth(secretKey string) func(http.Handler) http.Handler {
 
 			claims, ok := token.Claims.(*CustomClaims)
 			if !ok || !token.Valid {
+				apperrors.HandleError(w, apperrors.ErrInvalidToken)
+				return
+			}
+
+			// refresh tokens (and legacy tokens without a type) must not grant access
+			if claims.Type != "access" {
 				apperrors.HandleError(w, apperrors.ErrInvalidToken)
 				return
 			}
