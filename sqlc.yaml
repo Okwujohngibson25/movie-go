@@ -1,0 +1,17 @@
+version: "2"
+
+sql:
+  - engine: "postgresql"
+    queries: "db/queries"
+    schema: "migrations"
+    gen:
+      go:
+        package: "db"
+        out: "internal/database/db"
+        sql_package: "pgx/v5"
+        overrides:
+          - db_type: "timestamptz"
+            go_type: "time.Time"
+          - db_type: "timestamptz"
+            go_type: "*time.Time"
+            nullable: true
